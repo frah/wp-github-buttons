@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: GitHub Buttons
-Plugin URI: 
+Plugin URI: https://github.com/frah/wp-github-buttons
 Description: Insert GitHub buttons(http://ghbtns.com) to WordPress post.
 Author: Atsushi OHNO
 Author URI: http://tokcs.com/
-Version: 0.1
+Version: 0.2
 License: MIT Open Source License - http://www.opensource.org/licenses/mit-license.php
 */
 
@@ -33,83 +33,92 @@ THE SOFTWARE.
 
 */
 
-/**
- * Generate GitHub button code
- * @param string $user GitHub username
- * @param string $type Button type
- * @param string $repo GitHub repository name
- * @param string $count Is show the wathers or forks count
- * @param string $size Button size
- * @return string GitHub button code
- */
-function gen_github_button($user, $type, $repo = '', $count = '', $size = '') {
-    $ret = '';
-    if ($type === 'follow') {
-        $ret .= '<iframe src="http://ghbtns.com/github-btn.html';
-        $ret .= '?user='.$user;
-        $ret .= '&type=follow';
-        $ret .= ($count === 'true')?'&count=true':'';
-        $ret .= ($size === 'large')?'&size=large"':'"';
-        $ret .= ' allowtransparency="true" frameborder="0" scrolling="0"';
-        $ret .= ' height="'.($size === 'large')?'30':'20'.'px"';
-        $ret .= '></iframe>';
-    } else {
-        $ret .= '<iframe src="http://ghbtns.com/github-btn.html';
-        $ret .= '?user='.$user;
-        $ret .= '&repo='.$repo;
-        $ret .= '&type='.$type;
-        $ret .= ($count === 'true')?'&count=true':'';
-        $ret .= ($size === 'large')?'&size=large"':'"';
-        $ret .= ' allowtransparency="true" frameborder="0" scrolling="0"';
-        $ret .= ' height="'.($size === 'large')?'30':'20'.'px"';
-        $ret .= '></iframe>';
-    }
-    
-    return $ret;
-}
+$github_buttons_plugin = new GitHub_Buttons();
 
-/**
- * Shortcode handler (github/gh)
- * @param array $atts Attributes
- * @param mixed $content
- * @return 
- */
-function handle_github_buttons_sc_github($atts, $content = null) {
-    extract(shortcode_atts(array(
-        'user' => null,
-        'repo' => null,
-        'type' => 'fork',
-        'count' => '',
-        'size' => ''
-    ), $atts));
-    
-    if (!$user) {
-        if ($content) {
-            if (preg_match('/\s*https?:\/\/github\.com\/([^\/]+)(\/(.+))?/', $content, $m)) {
-                $user = $m[1];
-                $repo = $m[3];
+class GitHub_Buttons {
+    /**
+     * Constructor
+     */
+    public function __construct() {
+        add_action('init', array(&$this, 'handle_init'));
+    }
+
+    /**
+     * Init the plugin
+     */
+    public function handle_init() {
+        add_shortcode('github', array(&$this, 'handle_sc_github'));
+        add_shortcode('gh', array(&$this, 'handle_sc_github'));
+    }
+
+    /**
+     * Generate GitHub button code
+     * @param string $user GitHub username
+     * @param string $type Button type
+     * @param string $repo GitHub repository name
+     * @param string $count Is show the wathers or forks count
+     * @param string $size Button size
+     * @return string GitHub button code
+     */
+    public function gen_github_button($user, $type, $repo = '', $count = '', $size = '') {
+        $ret = '';
+        if ($type === 'follow') {
+            $ret .= '<iframe src="http://ghbtns.com/github-btn.html';
+            $ret .= '?user='.$user;
+            $ret .= '&type=follow';
+            $ret .= ($count === 'true')?'&count=true':'';
+            $ret .= ($size === 'large')?'&size=large"':'"';
+            $ret .= ' allowtransparency="true" frameborder="0" scrolling="0"';
+            $ret .= ' height="'.($size === 'large')?'30':'20'.'px"';
+            $ret .= '></iframe>';
+        } else {
+            $ret .= '<iframe src="http://ghbtns.com/github-btn.html';
+            $ret .= '?user='.$user;
+            $ret .= '&repo='.$repo;
+            $ret .= '&type='.$type;
+            $ret .= ($count === 'true')?'&count=true':'';
+            $ret .= ($size === 'large')?'&size=large"':'"';
+            $ret .= ' allowtransparency="true" frameborder="0" scrolling="0"';
+            $ret .= ' height="'.($size === 'large')?'30':'20'.'px"';
+            $ret .= '></iframe>';
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Shortcode handler (github/gh)
+     * @param array $atts Attributes
+     * @param mixed $content
+     * @return
+     */
+    public function handle_sc_github($atts, $content = null) {
+        extract(shortcode_atts(array(
+            'user' => null,
+            'repo' => null,
+            'type' => 'fork',
+            'count' => '',
+            'size' => ''
+        ), $atts));
+
+        if (!$user) {
+            if ($content) {
+                if (preg_match('/\s*https?:\/\/github\.com\/([^\/]+)(\/(.+))?/', $content, $m)) {
+                    $user = $m[1];
+                    $repo = $m[3];
+                }
             }
         }
-    }
-    
-    if ($user && !$repo) {
-        if ($type === 'follow') {
-            return gen_github_button($user, $type);
-        } else {
-            return $content;
+
+        if ($user && !$repo) {
+            if ($type === 'follow') {
+                return $this->gen_github_button($user, $type);
+            } else {
+                return $content;
+            }
         }
+
+        return $user ? $this->gen_github_button($user, $type, $repo, $count, $size):$content;
     }
-    
-    return $user ? gen_github_button($user, $type, $repo, $count, $size):$content;
 }
-
-/**
- * Init the plugin
- */
-function handle_github_buttons_init() {
-    add_shortcode('github', 'handle_github_buttons_sc_github');
-    add_shortcode('gh', 'handle_github_buttons_sc_github');
-}
-
-add_action('init', 'handle_github_buttons_init');
 ?>
