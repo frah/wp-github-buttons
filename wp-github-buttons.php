@@ -110,7 +110,11 @@ class GitHub_Buttons {
         $ret .= ($count === 'true')?'&count=true':'';
         $ret .= ($size === 'large')?'&size=large"':'"';
         $ret .= ' allowtransparency="true" frameborder="0" scrolling="0"';
-        $ret .= ' height="'.($size === 'large')?'30':'20'.'px"';
+        if ($size === 'large') {
+            $ret .= ' height="30px"';
+        } else {
+            $ret .= ' height="20px"';
+        }
         $ret .= '></iframe>';
 
         return $ret;
