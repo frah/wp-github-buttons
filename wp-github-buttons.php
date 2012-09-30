@@ -9,7 +9,7 @@ Version: 0.3
 License: MIT Open Source License - http://www.opensource.org/licenses/mit-license.php
 */
 
-/* LICENSE OF THE TWEETSTER PLUGIN
+/* LICENSE OF THE GITHUB BUTTONS PLUGIN
 
 Copyright (c) 2012 Atsushi OHNO.
 
