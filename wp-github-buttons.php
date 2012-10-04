@@ -66,6 +66,10 @@ class GitHub_Buttons {
      * Constructor
      */
     public function __construct() {
+        if (function_exists('register_uninstall_hook')) {
+            register_uninstall_hook(__FILE__, array(&$this, 'uninstall_hook'));
+        }
+
         add_action('init', array(&$this, 'handle_init'));
         add_action('admin_menu', array(&$this, 'handle_menu'));
     }
@@ -76,6 +80,15 @@ class GitHub_Buttons {
     public function handle_init() {
         add_shortcode('github', array(&$this, 'handle_sc_github'));
         add_shortcode('gh', array(&$this, 'handle_sc_github'));
+    }
+
+    /**
+     * Uninstall plugin
+     */
+    public function uninstall_hook() {
+        foreach ($this->op as $v) {
+            delete_option($v);
+        }
     }
 
     /**
